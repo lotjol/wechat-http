@@ -12,7 +12,7 @@ function json() {
   return src('package.json')
     .pipe(
       jeditor((json: any) => {
-        json.name = '@botue/miniprogram-request'
+        json.name = '@botue/wechat-http'
         json.devDependencies = {
           '@types/wechat-miniprogram': '^3.4.1',
         }

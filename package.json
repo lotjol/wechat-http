@@ -1,14 +1,15 @@
 {
-  "name": "miniprogram-http",
+  "name": "wechat-http",
   "version": "0.0.4",
   "description": "微信小程序http网络请求的扩展",
+  "homepage": "https://github.com/lotjol/wechat-http#readme",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install"
   },
-  "author": "lotjol",
+  "author": "lotjol <botue@sina.com>",
   "license": "ISC",
+  "repository": "lotjol/wechat-http",
   "types": "types/index.d.ts",
   "devDependencies": {
     "@types/gulp": "^4.0.9",
