@@ -12,7 +12,8 @@ function json() {
   return src('package.json')
     .pipe(
       jeditor((json: any) => {
-        json.name = '@botue/wechat-http'
+        json.name = '@botue/wechat-http',
+        json.scripts.prepare = undefined
         json.devDependencies = {
           '@types/wechat-miniprogram': '^3.4.1',
         }
