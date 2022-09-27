@@ -1,6 +1,26 @@
-const { src, dest, series } = require('gulp')
+const { src, dest, parallel, series, watch } = require('gulp')
 
+const jeditor = require('gulp-json-editor')
 const tsc = require('gulp-typescript')
+const del = require('delete')
+
+function copy() {
+  return src(['src/**/*.d.ts', 'README.md']).pipe(dest('package'))
+}
+
+function json() {
+  return src('package.json')
+    .pipe(
+      jeditor((json: any) => {
+        json.name = '@botue/miniprogram-request'
+        json.devDependencies = {
+          '@types/wechat-miniprogram': '^3.4.1',
+        }
+        return json
+      })
+    )
+    .pipe(dest('package'))
+}
 
 function compile() {
   return src(['src/**/*.ts'])
@@ -17,4 +37,18 @@ function compile() {
     .pipe(dest('package'))
 }
 
-exports.build = series(compile)
+function install() {
+  return src('src/**/*.ts').pipe(dest('miniprogram/utils/miniprogram-request'))
+}
+
+function clean(cb: any) {
+  del(['package'], cb)
+}
+
+exports.default = () => {
+  watch('src/**/*.ts', { events: 'all' }, install)
+}
+
+exports.json = json
+
+exports.build = series(clean, parallel(compile, copy, json))

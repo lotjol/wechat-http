@@ -67,7 +67,7 @@ const http: Http = <T>(
 }
 
 // 基础路径
-// http.baseURL = 'https://yapi.itheima.net/mock/30'
+http.baseURL = 'https://yapi.itheima.net/mock/30'
 
 http.loading = {
   title: '正在加载...',

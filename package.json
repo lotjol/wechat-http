@@ -1,6 +1,6 @@
 {
   "name": "miniprogram-http",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "微信小程序http网络请求的扩展",
   "main": "index.js",
   "scripts": {
@@ -9,15 +9,21 @@
   },
   "author": "lotjol",
   "license": "ISC",
+  "types": "types/index.d.ts",
   "devDependencies": {
     "@types/gulp": "^4.0.9",
     "@types/node": "^18.7.21",
+    "@types/wechat-miniprogram": "^3.4.1",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
     "@typescript-eslint/parser": "^5.38.0",
+    "delete": "^1.1.0",
     "eslint": "^8.24.0",
     "gulp": "^4.0.2",
+    "gulp-json-editor": "^2.5.6",
     "gulp-typescript": "6.0.0-alpha.1",
     "prettier": "2.7.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3",
     "commitizen": "^4.2.5",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^8.0.0"
