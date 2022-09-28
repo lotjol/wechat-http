@@ -5,6 +5,9 @@
     "include": []
   },
   "setting": {
+    "useCompilerPlugins": [
+      "typescript"
+    ],
     "bundle": false,
     "userConfirmedBundleSwitch": false,
     "urlCheck": true,
@@ -41,7 +44,7 @@
   },
   "compileType": "miniprogram",
   "libVersion": "2.19.4",
-  "appid": "wx1611c59f1675fe37",
+  "appid": "wx3eb80995b7e84924",
   "projectname": "miniprogram-92",
   "condition": {},
   "editorSetting": {

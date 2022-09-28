@@ -1,6 +1,6 @@
 {
   "name": "wechat-http",
-  "version": "0.0.4",
+  "version": "0.0.1",
   "description": "微信小程序http网络请求的扩展",
   "homepage": "https://github.com/lotjol/wechat-http#readme",
   "main": "index.js",
@@ -10,7 +10,10 @@
   "author": "lotjol <botue@sina.com>",
   "license": "ISC",
   "repository": "lotjol/wechat-http",
-  "types": "types/index.d.ts",
+  "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/gulp": "^4.0.9",
     "@types/node": "^18.7.21",

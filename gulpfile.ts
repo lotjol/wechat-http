@@ -1,55 +1,52 @@
-const { src, dest, parallel, series, watch } = require('gulp')
+const { src, dest, task, parallel, series, watch } = require('gulp')
+const path = require('path')
 
 const jeditor = require('gulp-json-editor')
-const tsc = require('gulp-typescript')
+const ts = require('gulp-typescript')
 const del = require('delete')
 
+const tsProject = ts.createProject('tsconfig.json', {
+  declaration: true,
+})
+
+const destPath = 'miniprogram/node_modules/@botue/wechat-http'
+
 function copy() {
-  return src(['src/**/*.d.ts', 'README.md']).pipe(dest('package'))
+  return src(['src/**/*.d.ts', 'README.md']).pipe(dest(destPath))
 }
 
 function json() {
   return src('package.json')
     .pipe(
       jeditor((json: any) => {
-        json.name = '@botue/wechat-http',
+        json.name = '@botue/wechat-http'
         json.scripts.prepare = undefined
+        json.config = undefined
         json.devDependencies = {
           '@types/wechat-miniprogram': '^3.4.1',
         }
         return json
       })
     )
-    .pipe(dest('package'))
+    .pipe(dest(destPath))
 }
 
 function compile() {
-  return src(['src/**/*.ts'])
-    .pipe(
-      tsc({
-        skipLibCheck: true,
-        strict: true,
-        forceConsistentCasingInFileNames: true,
-        esModuleInterop: true,
-        module: 'commonjs',
-        target: 'es2016',
-      })
-    )
-    .pipe(dest('package'))
-}
-
-function install() {
-  return src('src/**/*.ts').pipe(dest('miniprogram/utils/miniprogram-request'))
+  return src(['src/**/*.ts']).pipe(tsProject()).pipe(dest(destPath))
 }
 
 function clean(cb: any) {
-  del(['package'], cb)
+  del([destPath], cb)
 }
 
-exports.default = () => {
-  watch('src/**/*.ts', { events: 'all' }, install)
-}
+task('dev', () => {
+  watch(
+    'src/**/*.ts',
+    { events: 'all' },
+    series(clean, parallel(compile, copy, json))
+  )
+})
 
-exports.json = json
-
-exports.build = series(clean, parallel(compile, copy, json))
+task('build', () => {
+  return src(path.join(destPath, '**/*')).pipe(dest('package'))
+})

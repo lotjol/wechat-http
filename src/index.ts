@@ -1,5 +1,25 @@
 // 封装小程序网络请求 api
 
+interface Http {
+  (
+    params: WechatMiniprogram.RequestOption,
+    options?: { showLoading: boolean }
+  ): WechatMiniprogram.RequestTask
+  <T>(
+    params: WechatMiniprogram.RequestOption,
+    options?: { showLoading: boolean }
+  ): Promise<T>
+  baseURL?: string
+  loading: WechatMiniprogram.ShowLoadingOption
+  intercept: {
+    request(
+      result: WechatMiniprogram.RequestOption
+    ): WechatMiniprogram.RequestOption
+    response(response: WechatMiniprogram.RequestSuccessCallbackResult): any
+  }
+  // get(url: string, data: any): void;
+}
+
 // 记录 loading 的状态
 const loadingQueue: string[] = []
 
@@ -75,11 +95,12 @@ http.loading = {
 }
 
 // 默认拦截器（什么都没做）
+
 http.intercept = {
   request: (params: any) => params,
   response: (result: any) => result,
 }
 
-// http.get = (url, data) => {};
+// http.get = (url, data) => {}
 
 export default http

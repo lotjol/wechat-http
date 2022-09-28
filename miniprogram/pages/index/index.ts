@@ -1,35 +1,16 @@
-import http from '../../utils/miniprogram-request'
-
-http.intercept.request = (params) => {
-  return params
-}
-
-http.intercept.response = (response) => {
-  console.log(response)
-  return {}
-}
-
-http.loading = {
-  title: '不在加载...',
-  mask: true,
-}
-
-http.baseURL = 'https://yapi.itheima.net/mock/30'
-
 Page({
-  async onLoad() {
-    http(
-      {
-        url: '/goods',
-        success() {
-          console.log('ok')
-        },
-      }
-      // { showLoading: false }
-    )
+  onLoad() {
+    wx.http({
+      url: '/goods',
+      success(res) {
+        console.log(res)
+      },
+    })
 
-    await http({
+    const errMsg = wx.http<{ errMsg: string }>({
       url: '/goods',
     })
+
+    console.log(errMsg)
   },
 })
