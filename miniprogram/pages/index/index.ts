@@ -1,16 +1,24 @@
+interface Goods {
+  goods_id: string
+  goods_name: string
+  godos_price: string
+}
+
 Page({
-  onLoad() {
-    wx.http({
-      url: '/goods',
-      success(res) {
-        console.log(res)
-      },
-    })
+  async onLoad() {
+    // wx.http({
+    //   url: '/goods',
+    //   success(res) {
+    //     console.log(res)
+    //   },
+    // })
 
-    const errMsg = wx.http<{ errMsg: string }>({
-      url: '/goods',
-    })
+    // const goods = await wx.http<Goods[]>({
+    //   url: '/goods',
+    // })
 
-    console.log(errMsg)
+    // const goods = await wx.http.get<Goods[]>('/goods')
+
+    const goods = await wx.http.post<Goods[]>('/goods')
   },
 })

@@ -1,1 +1,3 @@
 <view class="container">小程序测试</view>
+
+<view wx:for="{{goodsList}}"></view>
