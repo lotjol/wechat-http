@@ -1,5 +1,3 @@
-// 封装小程序网络请求 api
-
 interface Http {
   <T>(
     params: WechatMiniprogram.RequestOption,
@@ -7,7 +5,6 @@ interface Http {
   ): Promise<T>
   /**
    * 配置接口基础路径
-   * @type {string}
    */
   baseURL?: string
   /**
@@ -18,15 +15,38 @@ interface Http {
     request(
       result: WechatMiniprogram.RequestOption
     ): WechatMiniprogram.RequestOption
-    response(response: WechatMiniprogram.RequestSuccessCallbackResult): any
+    response(response: RequestSuccessResult): any
   }
-  get<T>(url: string, data?: any): Promise<T>
-  post<T>(url: string, data?: any): Promise<T>
+  get<T = any>(
+    url: string,
+    data?: any
+  ): Promise<{ code: number; message: string; data: T }>
+  post<T = any>(
+    url: string,
+    data?: any
+  ): Promise<{ code: number; message: string; data: T }>
+  put<T = any>(
+    url: string,
+    data?: any
+  ): Promise<{ code: number; message: string; data: T }>
+  delete<T = any>(
+    url: string,
+    data?: any
+  ): Promise<{ code: number; message: string; data: T }>
 }
+
+type RequestSuccessResult = WechatMiniprogram.RequestSuccessCallbackResult<{
+  code: number
+  message: string
+  data: any
+}>
 
 // 记录 loading 的状态
 const loadingQueue: string[] = []
 
+/**
+ * 封装 wx.request API
+ */
 const http: Http = <T>(
   params: WechatMiniprogram.RequestOption,
   options = { showLoading: true }
@@ -50,7 +70,7 @@ const http: Http = <T>(
     // 调用小程序 api
     wx.request({
       ...params,
-      success: (result) => {
+      success: (result: RequestSuccessResult) => {
         // 调用拦截器处理响应数据
         resolve(http.intercept.response(result))
       },
@@ -66,34 +86,55 @@ const http: Http = <T>(
   })
 }
 
-// 基础路径
-// http.baseURL = 'https://yapi.itheima.net/mock/30'
-
+/**
+ * 请求加载状态默认配置
+ */
 http.loading = {
   title: '正在加载...',
   mask: true,
 }
 
-// 默认拦截器（什么都没做）
+/**
+ * 默认拦截器（什么也没做）
+ */
 http.intercept = {
-  request: (params: any) => params,
-  response: (result: any) => result,
+  request: (params) => params,
+  response: (result) => result,
 }
 
-http.get = <T>(url: string, data?: any) => {
-  return http<T>({
+/**
+ * 方法别名
+ */
+http.get = <T = any>(url: string, data?: any) => {
+  return http<{ code: number; message: string; data: T }>({
     url,
     data,
     method: 'GET',
   })
 }
 
-http.post = <T>(url: string, data?: any) => {
-  return http<T>({
+http.post = <T = any>(url: string, data?: any) => {
+  return http<{ code: number; message: string; data: T }>({
     url,
     data,
     method: 'POST',
   })
 }
 
-export default http
+http.put = <T = any>(url: string, data?: any) => {
+  return http<{ code: number; message: string; data: T }>({
+    url,
+    data,
+    method: 'PUT',
+  })
+}
+
+http.delete = <T = any>(url: string, data?: any) => {
+  return http<{ code: number; message: string; data: T }>({
+    url,
+    data,
+    method: 'DELETE',
+  })
+}
+
+export { Http }
