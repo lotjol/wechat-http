@@ -1,8 +1,12 @@
+// 业务接口数据类型
+export interface ResponseResultData<T = any> {
+  [key: string]: any
+  data: T
+}
+
+// 数据类型
 interface Http {
-  <T>(
-    params: WechatMiniprogram.RequestOption,
-    options?: { showLoading: boolean }
-  ): Promise<T>
+  <T = ResponseResultData>(options: WechatMiniprogram.RequestOption): Promise<T>
   /**
    * 配置接口基础路径
    */
@@ -13,128 +17,132 @@ interface Http {
   loading: WechatMiniprogram.ShowLoadingOption
   intercept: {
     request(
-      result: WechatMiniprogram.RequestOption
+      options: WechatMiniprogram.RequestOption
     ): WechatMiniprogram.RequestOption
-    response(response: RequestSuccessResult): any
+    response(
+      result: WechatMiniprogram.RequestSuccessCallbackResult & {
+        config: WechatMiniprogram.RequestOption
+      }
+    ): any
   }
+
+  // 快捷方法
+
+  /**
+   * GET 方法请求
+   */
   get<T = any>(
     url: string,
-    data?: any
-  ): Promise<{ code: number; message: string; data: T }>
+    data?: string | AnyObject
+  ): Promise<ResponseResultData<T>>
+
+  /**
+   * POST 方法请求
+   */
   post<T = any>(
     url: string,
-    data?: any
-  ): Promise<{ code: number; message: string; data: T }>
+    data?: string | AnyObject
+  ): Promise<ResponseResultData<T>>
+
+  /**
+   * PUT 方法请求
+   */
   put<T = any>(
     url: string,
-    data?: any
-  ): Promise<{ code: number; message: string; data: T }>
+    data?: string | AnyObject
+  ): Promise<ResponseResultData<T>>
+
+  /**
+   * DELETE 方法请求
+   */
   delete<T = any>(
     url: string,
-    data?: any
-  ): Promise<{ code: number; message: string; data: T }>
+    data?: string | AnyObject
+  ): Promise<ResponseResultData<T>>
 }
 
-type RequestSuccessResult = WechatMiniprogram.RequestSuccessCallbackResult<{
-  code: number
-  message: string
-  data: any
-}>
+function createHttp(config = { showLoading: true }) {
+  // 记录 loading 的状态
+  const loadingQueue: string[] = []
 
-// 记录 loading 的状态
-const loadingQueue: string[] = []
+  /**
+   * 封装 wx.request API
+   */
+  const http: Http = (options) => {
+    // 处理基础路径
+    if (!options.url.startsWith('http') && http.baseURL) {
+      options.url = http.baseURL + options.url
+    }
 
-/**
- * 封装 wx.request API
- */
-const http: Http = <T>(
-  params: WechatMiniprogram.RequestOption,
-  options = { showLoading: true }
-): Promise<T> => {
-  // 处理基础路径
-  if (!params.url.startsWith('http') && http.baseURL) {
-    params.url = http.baseURL + params.url
+    // 调用拦截器处理请求数据
+    options = http.intercept.request(options)
+
+    // 记录请求开始的次量
+    loadingQueue.push('loading')
+
+    // 是否显示加载 loading
+    if (config.showLoading && loadingQueue.length) wx.showLoading(http.loading)
+
+    // 包装 Promise 对象
+    return new Promise((resolve, reject) => {
+      // 调用小程序 api
+      wx.request({
+        ...options,
+        success: (result) => {
+          // 调用拦截器处理响应数据
+          resolve(http.intercept.response({ ...result, config: options }))
+        },
+        fail: reject,
+        complete: () => {
+          // 记录结束的请求数量
+          loadingQueue.pop()
+          // 关闭加载提示框
+          if (!loadingQueue.length) wx.hideLoading()
+        },
+      })
+    })
   }
 
-  // 调用拦截器处理请求数据
-  params = http.intercept.request(params)
+  // get 方法请求
+  http.get = (url, data) => {
+    return http({ url, data, method: 'GET' })
+  }
 
-  // 记录请求开始的次量
-  loadingQueue.push('loading')
+  // post 方法请求
+  http.post = (url, data) => {
+    return http({ url, data, method: 'POST' })
+  }
 
-  // 是否显示加载 loading
-  if (options.showLoading && loadingQueue.length) wx.showLoading(http.loading)
+  // put 方法请求
+  http.put = (url, data) => {
+    return http({ url, data, method: 'PUT' })
+  }
 
-  // 包装 Promise 对象
-  return new Promise((resolve, reject) => {
-    // 调用小程序 api
-    wx.request({
-      ...params,
-      success: (result: RequestSuccessResult) => {
-        // 调用拦截器处理响应数据
-        resolve(http.intercept.response(result))
-      },
-      fail: reject,
-      complete: () => {
-        // 记录结束的请求数量
-        loadingQueue.pop()
+  // delete 方法请求
+  http.delete = (url, data) => {
+    return http({ url, data, method: 'DELETE' })
+  }
 
-        // 关闭加载提示框
-        if (!loadingQueue.length) wx.hideLoading()
-      },
-    })
-  })
+  /**
+   * 默认loading配置
+   */
+  http.loading = {
+    title: '正在加载...',
+    mask: true,
+  }
+
+  /**
+   * 默认拦截器（什么也没做）
+   */
+  http.intercept = {
+    request: (options) => options,
+    response: (result) => result,
+  }
+
+  return http
 }
 
-/**
- * 请求加载状态默认配置
- */
-http.loading = {
-  title: '正在加载...',
-  mask: true,
-}
+const http = createHttp()
 
-/**
- * 默认拦截器（什么也没做）
- */
-http.intercept = {
-  request: (params) => params,
-  response: (result) => result,
-}
-
-/**
- * 方法别名
- */
-http.get = <T = any>(url: string, data?: any) => {
-  return http<{ code: number; message: string; data: T }>({
-    url,
-    data,
-    method: 'GET',
-  })
-}
-
-http.post = <T = any>(url: string, data?: any) => {
-  return http<{ code: number; message: string; data: T }>({
-    url,
-    data,
-    method: 'POST',
-  })
-}
-
-http.put = <T = any>(url: string, data?: any) => {
-  return http<{ code: number; message: string; data: T }>({
-    url,
-    data,
-    method: 'PUT',
-  })
-}
-
-http.delete = <T = any>(url: string, data?: any) => {
-  return http<{ code: number; message: string; data: T }>({
-    url,
-    data,
-    method: 'DELETE',
-  })
-}
-
-export { Http }
+export type { Http }
+export { http as default, createHttp }

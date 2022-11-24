@@ -1,9 +1,3 @@
-interface Goods {
-  goods_id: string
-  goods_name: string
-  godos_price: string
-}
-
 Page({
   async onLoad() {
     // wx.http({
@@ -12,13 +6,12 @@ Page({
     //     console.log(res)
     //   },
     // })
-
-    // const goods = await wx.http<Goods[]>({
+    // 普通调用方式
+    // const goods = await wx.http({
     //   url: '/goods',
     // })
-
-    // const goods = await wx.http.get<Goods[]>('/goods')
-
-    const goods = await wx.http.post<Goods[]>('/goods')
+    // console.log(goods)
+    const goods = await wx.http.get('/goods')
+    console.log(goods.data)
   },
 })

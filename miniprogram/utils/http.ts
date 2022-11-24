@@ -1,18 +1,17 @@
-import http from '@botue/wechat-http'
+import http from 'wechat-http'
 
 http.baseURL = 'https://yapi.itheima.net/mock/30'
 
-http.intercept.request = (params) => {
+http.intercept.request = (options) => {
   // 请求头信息
-  params.header = Object.assign({}, params.header, {
+  options.header = Object.assign({}, options.header, {
     Authorization: 'Bearer <token>',
   })
-
-  return params
+  return options
 }
 
-http.intercept.response = ({ data }) => {
-  return data
+http.intercept.response = (result) => {
+  return result.data
 }
 
 // 挂载到全局对象

@@ -9,7 +9,7 @@ const tsProject = ts.createProject('tsconfig.json', {
   declaration: true,
 })
 
-const destPath = 'miniprogram/node_modules/@botue/wechat-http'
+const destPath = 'miniprogram/node_modules/wechat-http'
 
 function copy() {
   return src(['src/**/*.d.ts', 'README.md']).pipe(dest(destPath))
@@ -19,7 +19,7 @@ function json() {
   return src('package.json')
     .pipe(
       jeditor((json: any) => {
-        json.name = '@botue/wechat-http'
+        // json.name = '@botue/wechat-http'
         json.scripts.prepare = undefined
         json.config = undefined
         json.devDependencies = {

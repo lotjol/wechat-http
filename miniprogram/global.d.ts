@@ -1,9 +1,17 @@
-import http from '@botue/wechat-http'
+import { Http } from 'wechat-http'
 
 declare global {
   namespace WechatMiniprogram {
     interface Wx {
-      http: typeof http
+      http: Http
     }
+  }
+}
+
+declare module 'wechat-http' {
+  export interface ResponseResultData<T> {
+    code: number
+    message: string
+    data: T
   }
 }
