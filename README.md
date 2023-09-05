@@ -59,7 +59,7 @@ http.put(url, data?, config?)
 // DELETE 方法请求
 http.delete(url, data?, config?)
 
-// wx.uploadFile 上传文件
+// 调用 wx.uploadFile 上传文件
 http.upload(url, data?, config?)
 ```
 
@@ -73,16 +73,22 @@ Page({
     // 或快捷方法
     await wx.http.get('/path')
 
+    // 选择文件
+    const { tempFiles } = await wx.chooseMedia({ count: 1 })
     // uploadFile 上传文件 - 普通用法
     await wx.http({
       url: '/path',
       method: 'UPLOAD', // 调用 wx.uploadFile
       name: 'file', // 文件的 key , 服务器端通过 key 获取文件二进制内容
-      filePath: tempFilePath, // 文件的 value , 要上传文件资源的路径(本地路径)
+      filePath: tempFiles[0].tempFilePath, // 文件的 value , 要上传文件资源的路径(本地路径)
       formData: {}, // HTTP 请求中其他额外的 form data
     })
     // 或快捷方法
-    await wx.http.upload('/path', { name: 'file', filePath: tempFilePath, formData: {})
+    await wx.http.upload('/path', {
+      name: 'file',
+      filePath: tempFilePath,
+      formData: {},
+    })
   },
 })
 ```
