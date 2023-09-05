@@ -1,0 +1,16 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  wechat-http:
+    specifier: ^0.0.5
+    version: 0.0.5
+
+packages:
+
+  /wechat-http@0.0.5:
+    resolution: {integrity: sha512-hOjL1D3nWwoSzxoZ8769T5TRDxeNH6vk1exG2o3o2ej4dfWDXKcKjwHt6gkFn3DzU3RGdOgubeAwq4uM7Y+k/g==}
+    dev: false
