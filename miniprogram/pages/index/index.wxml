@@ -1,2 +1,9 @@
-<view class="container">小程序测试</view>
-<view wx:for="{{goodsList}}" wx:key="id"></view>
+<view class="title">普通请求 - wx.request</view>
+<button type="primary" bind:tap="getData01">发送请求-原生- wx.request</button>
+<button type="default" bind:tap="getData02">method:GET - Promise</button>
+<button type="primary" bind:tap="getData03">http.get() - Promise</button>
+
+<view class="title">上传文件 - wx.uploadFile</view>
+<button type="primary" bind:tap="upload01">上传文件-原生 - wx.uploadFile</button>
+<button type="default" bind:tap="upload02">method:UPLOAD - Promise</button>
+<button type="primary" bind:tap="upload03">http.upload - Promise</button>

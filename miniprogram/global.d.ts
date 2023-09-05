@@ -11,7 +11,7 @@ declare global {
 declare module 'wechat-http' {
   export interface ResponseResultData<T> {
     code: number
-    message: string
-    data: T
+    msg: string
+    result: T
   }
 }

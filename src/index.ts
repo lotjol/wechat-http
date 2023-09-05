@@ -4,9 +4,27 @@ export interface ResponseResultData<T = any> {
   data: T
 }
 
+type Method = WechatMiniprogram.RequestOption['method'] | 'UPLOAD'
+type Options =
+  | WechatMiniprogram.RequestOption
+  | (WechatMiniprogram.UploadFileOption & { method: Method })
+type RequestData = WechatMiniprogram.RequestOption['data']
+type RequestConfig = Omit<
+  WechatMiniprogram.RequestOption,
+  'url' | 'method' | 'data' | 'success' | 'fail' | 'complete'
+>
+type UploadData = Pick<
+  WechatMiniprogram.UploadFileOption,
+  'name' | 'filePath' | 'formData'
+>
+type UploadConfig = Omit<
+  WechatMiniprogram.UploadFileOption,
+  'url' | 'name' | 'filePath' | 'formData' | 'success' | 'fail' | 'complete'
+>
+
 // 数据类型
 interface Http {
-  <T = ResponseResultData>(options: WechatMiniprogram.RequestOption): Promise<T>
+  <T = ResponseResultData>(options: Options): Promise<T>
   /**
    * 配置接口基础路径
    */
@@ -16,13 +34,15 @@ interface Http {
    */
   loading: WechatMiniprogram.ShowLoadingOption
   intercept: {
-    request(
-      options: WechatMiniprogram.RequestOption
-    ): WechatMiniprogram.RequestOption
+    request(options: Options): Options
     response(
-      result: WechatMiniprogram.RequestSuccessCallbackResult & {
-        config: WechatMiniprogram.RequestOption
-      }
+      result:
+        | (WechatMiniprogram.RequestSuccessCallbackResult & {
+            config: Options
+          })
+        | (WechatMiniprogram.UploadFileSuccessCallbackResult & {
+            config: Options
+          })
     ): any
   }
 
@@ -33,7 +53,8 @@ interface Http {
    */
   get<T = any>(
     url: string,
-    data?: string | AnyObject
+    data?: RequestData,
+    config?: RequestConfig
   ): Promise<ResponseResultData<T>>
 
   /**
@@ -41,7 +62,8 @@ interface Http {
    */
   post<T = any>(
     url: string,
-    data?: string | AnyObject
+    data?: RequestData,
+    config?: RequestConfig
   ): Promise<ResponseResultData<T>>
 
   /**
@@ -49,7 +71,8 @@ interface Http {
    */
   put<T = any>(
     url: string,
-    data?: string | AnyObject
+    data?: RequestData,
+    config?: RequestConfig
   ): Promise<ResponseResultData<T>>
 
   /**
@@ -57,7 +80,17 @@ interface Http {
    */
   delete<T = any>(
     url: string,
-    data?: string | AnyObject
+    data?: RequestData,
+    config?: RequestConfig
+  ): Promise<ResponseResultData<T>>
+
+  /**
+   * wx.uploadFile 上传文件
+   */
+  upload<T = any>(
+    url: string,
+    data: UploadData,
+    config?: UploadConfig
   ): Promise<ResponseResultData<T>>
 }
 
@@ -71,6 +104,11 @@ function createHttp(config = { showLoading: true }) {
   const http: Http = (options) => {
     // 处理基础路径
     if (!options.url.startsWith('http') && http.baseURL) {
+      // 去除 baseURL 最后的 /
+      if (http.baseURL.endsWith('/')) {
+        http.baseURL = http.baseURL.slice(0, -1)
+      }
+      // 拼接 baseURL
       options.url = http.baseURL + options.url
     }
 
@@ -81,54 +119,95 @@ function createHttp(config = { showLoading: true }) {
     loadingQueue.push('loading')
 
     // 是否显示加载 loading
-    if (config.showLoading && loadingQueue.length) wx.showLoading(http.loading)
+    if (config.showLoading && loadingQueue.length) {
+      wx.showLoading(http.loading)
+    }
 
-    // 包装 Promise 对象
-    return new Promise((resolve, reject) => {
-      // 调用小程序 api
-      wx.request({
-        ...options,
-        success: (result) => {
-          // 调用拦截器处理响应数据
-          resolve(http.intercept.response({ ...result, config: options }))
-        },
-        fail: reject,
-        complete: () => {
-          // 记录结束的请求数量
-          loadingQueue.pop()
-          // 关闭加载提示框
-          if (!loadingQueue.length) wx.hideLoading()
-        },
+    // 非上传文件请求
+    if (options.method === 'UPLOAD') {
+      // 包装 Promise 对象
+      return new Promise((resolve, reject) => {
+        // 联合类型断言
+        const _options = options as WechatMiniprogram.UploadFileOption
+        // 调用 wx.uploadFile 上传文件
+        wx.uploadFile({
+          ..._options,
+          success: (result) => {
+            if (result.statusCode >= 200 && result.statusCode < 300) {
+              result.data = JSON.parse(result.data)
+              resolve(http.intercept.response({ ...result, config: options }))
+            } else {
+              reject(result)
+            }
+          },
+          fail: reject,
+          complete: () => {
+            // 记录结束的请求数量
+            loadingQueue.pop()
+            // 关闭加载提示框
+            if (!loadingQueue.length) wx.hideLoading()
+          },
+        })
       })
-    })
+    } else {
+      // 包装 Promise 对象
+      return new Promise((resolve, reject) => {
+        // 联合类型断言
+        const _options = options as WechatMiniprogram.RequestOption
+        // 调用 wx.request 发送请求
+        wx.request({
+          ..._options,
+          success: (result) => {
+            if (result.statusCode >= 200 && result.statusCode < 300) {
+              // 调用拦截器处理响应数据
+              resolve(http.intercept.response({ ...result, config: _options }))
+            } else {
+              reject(result)
+            }
+          },
+          fail: reject,
+          complete: () => {
+            // 记录结束的请求数量
+            loadingQueue.pop()
+            // 关闭加载提示框
+            if (!loadingQueue.length) wx.hideLoading()
+          },
+        })
+      })
+    }
   }
 
   // get 方法请求
-  http.get = (url, data) => {
-    return http({ url, data, method: 'GET' })
+  http.get = (url, data, config) => {
+    return http({ method: 'GET', url, data, ...config })
   }
 
   // post 方法请求
-  http.post = (url, data) => {
-    return http({ url, data, method: 'POST' })
+  http.post = (url, data, config) => {
+    return http({ method: 'POST', url, data, ...config })
   }
 
   // put 方法请求
-  http.put = (url, data) => {
-    return http({ url, data, method: 'PUT' })
+  http.put = (url, data, config) => {
+    return http({ method: 'PUT', url, data, ...config })
   }
 
   // delete 方法请求
-  http.delete = (url, data) => {
-    return http({ url, data, method: 'DELETE' })
+  http.delete = (url, data, config) => {
+    return http({ method: 'DELETE', url, data, ...config })
+  }
+
+  // upload 方法请求
+  http.upload = (url, data, config) => {
+    return http({ method: 'UPLOAD', url, ...data, ...config })
   }
 
   /**
    * 默认loading配置
    */
   http.loading = {
-    title: '正在加载...',
-    mask: true,
+    title: '正在加载',
+    mask: false,
   }
 
   /**

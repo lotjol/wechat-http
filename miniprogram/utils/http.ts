@@ -1,12 +1,16 @@
 import http from 'wechat-http'
 
-http.baseURL = 'https://yapi.itheima.net/mock/30'
+http.baseURL = 'https://pcapi-xiaotuxian-front.itheima.net/'
+
+const token =
+  'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjI4Njc3OTM0MjAyODgiLCJpYXQiOjE2OTM4Nzg0MDgsImV4cCI6MTY5MzkwNzIwOH0.zYi5728gq_WGIpiMa3wsr86svTHMAdJ_dhKXFpo143M'
 
 http.intercept.request = (options) => {
   // 请求头信息
-  options.header = Object.assign({}, options.header, {
-    Authorization: 'Bearer <token>',
-  })
+  options.header = {
+    Authorization: token,
+    ...options.header,
+  }
   return options
 }
 
