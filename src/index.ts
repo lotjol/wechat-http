@@ -137,7 +137,7 @@ function createHttp(config = { showLoading: true }) {
               result.data = JSON.parse(result.data)
               resolve(http.intercept.response({ ...result, config: options }))
             } else {
-              reject(result)
+              reject(http.intercept.response({ ...result, config: options }))
             }
           },
           fail: reject,
@@ -160,9 +160,9 @@ function createHttp(config = { showLoading: true }) {
           success: (result) => {
             if (result.statusCode >= 200 && result.statusCode < 300) {
               // 调用拦截器处理响应数据
-              resolve(http.intercept.response({ ...result, config: _options }))
+              resolve(http.intercept.response({ ...result, config: options }))
             } else {
-              reject(result)
+              reject(http.intercept.response({ ...result, config: options }))
             }
           },
           fail: reject,
