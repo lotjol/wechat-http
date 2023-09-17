@@ -133,12 +133,10 @@ function createHttp(config = { showLoading: true }) {
         wx.uploadFile({
           ..._options,
           success: (result) => {
-            if (result.statusCode >= 200 && result.statusCode < 300) {
-              result.data = JSON.parse(result.data)
-              resolve(http.intercept.response({ ...result, config: options }))
-            } else {
-              reject(http.intercept.response({ ...result, config: options }))
-            }
+            // 将响应数据转为对象
+            result.data = JSON.parse(result.data)
+            // 调用拦截器处理响应数据
+            resolve(http.intercept.response({ ...result, config: options }))
           },
           fail: reject,
           complete: () => {
@@ -158,12 +156,8 @@ function createHttp(config = { showLoading: true }) {
         wx.request({
           ..._options,
           success: (result) => {
-            if (result.statusCode >= 200 && result.statusCode < 300) {
-              // 调用拦截器处理响应数据
-              resolve(http.intercept.response({ ...result, config: options }))
-            } else {
-              reject(http.intercept.response({ ...result, config: options }))
-            }
+            // 调用拦截器处理响应数据
+            resolve(http.intercept.response({ ...result, config: options }))
           },
           fail: reject,
           complete: () => {
