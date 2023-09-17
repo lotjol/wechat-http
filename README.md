@@ -1,4 +1,4 @@
-## wechat-http v0.0.6
+## wechat-http v0.0.8
 
 微信小程序 [wx.request](https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html) 和 [wx.uploadFile](https://developers.weixin.qq.com/miniprogram/dev/api/network/upload/wx.uploadFile.html) 请求的扩展，支持 Promise、拦截器和 TypeScript。
 
@@ -73,6 +73,7 @@ Page({
     // 或快捷方法
     await wx.http.get('/path')
 
+
     // 选择文件
     const { tempFiles } = await wx.chooseMedia({ count: 1 })
     // uploadFile 上传文件 - 普通用法
@@ -85,9 +86,9 @@ Page({
     })
     // 或快捷方法
     await wx.http.upload('/path', {
-      name: 'file',
-      filePath: tempFilePath,
-      formData: {},
+      name: 'file', // 文件的 key
+      filePath: tempFiles[0]tempFilePath, // 文件的 value
+      formData: {}, // // HTTP 请求中其他额外的 form data
     })
   },
 })
